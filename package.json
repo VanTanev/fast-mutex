@@ -37,8 +37,7 @@
     "sinon": "^1.17.5",
     "tsdx": "^0.13.2",
     "tslib": "^2.0.1",
-    "typescript": "^3.9.7",
-    "uglify-js": "^2.7.3"
+    "typescript": "^3.9.7"
   },
   "dependencies": {
     "debug": "^2.2.0"
