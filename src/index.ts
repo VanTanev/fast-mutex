@@ -135,7 +135,7 @@ export default class FastMutex {
   release(key: string) {
     debug('FastMutex client "%s" is releasing lock on "%s"', this.clientId, key);
     const y = this.yPrefix + key;
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.localStorage.removeItem(y);
       this.lockStats.lockEnd = +new Date();
       this.lockStats.lockDuration = this.lockStats.lockEnd - this.lockStats.lockStart!;

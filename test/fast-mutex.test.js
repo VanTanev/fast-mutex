@@ -1,4 +1,4 @@
-var FastMutex = require('../index.ts').default;
+var FastMutex = require('../src/index.ts').default;
 
 var sinon = require('sinon');
 var chai = require('chai');
@@ -23,14 +23,14 @@ describe('FastMutex', () => {
   it('should immediately establish a lock when there is no contention', () => {
     const fm1 = new FastMutex({ localStorage: localStorage });
 
-    return fm1.lock('clientId').then(stats => {
+    return fm1.lock('clientId').then((stats) => {
       expect(stats.restartCount).to.be.equal(0);
       expect(stats.locksLost).to.be.equal(0);
       expect(stats.contentionCount).to.be.equal(0);
     });
   });
 
-  it('When another client has a lock (Y is not 0), it should restart to acquire a lock at a later time', function() {
+  it('When another client has a lock (Y is not 0), it should restart to acquire a lock at a later time', function () {
     const fm1 = new FastMutex({ xPrefix: 'xPrefix_', yPrefix: 'yPrefix_', localStorage: localStorage });
 
     const key = 'clientId';
@@ -40,7 +40,7 @@ describe('FastMutex', () => {
       localStorage.removeItem(`yPrefix_${key}`);
     }, 20);
 
-    return fm1.lock(key).then(stats => {
+    return fm1.lock(key).then((stats) => {
       expect(stats.restartCount).to.be.at.least(1);
       expect(stats.locksLost).to.be.equal(0);
       expect(stats.contentionCount).to.be.equal(0);
@@ -62,7 +62,7 @@ describe('FastMutex', () => {
     stub.onCall(3).returns(null);
     stub.onCall(4).returns('uniqueId');
 
-    return fm.lock(key).then(stats => {
+    return fm.lock(key).then((stats) => {
       expect(stats.restartCount).to.be.equal(1);
       expect(stats.locksLost).to.be.equal(1);
       expect(stats.contentionCount).to.be.equal(1);
@@ -82,7 +82,7 @@ describe('FastMutex', () => {
 
     const spy = sandbox.spy(fm, 'lock');
 
-    return fm.lock(key).then(stats => {
+    return fm.lock(key).then((stats) => {
       expect(stats.restartCount).to.be.equal(0);
       expect(stats.locksLost).to.be.equal(0);
       expect(stats.contentionCount).to.be.equal(1);
@@ -94,7 +94,7 @@ describe('FastMutex', () => {
   // This is just to ensure that the internals of FastMutex have prefixes on the
   // X and Y locks such that two different FM clients can acquire locks on
   // different keys concurrently without clashing.
-  it('should not clash with other fastMutex locks', function() {
+  it('should not clash with other fastMutex locks', function () {
     const yPrefix = 'yLock';
     const xPrefix = 'xLock';
     const opts = { localStorage, yPrefix, xPrefix };
@@ -105,19 +105,19 @@ describe('FastMutex', () => {
     let lock1Acquired = false;
     let lock2Acquired = false;
 
-    const lock1Promise = fm1.lock('lock1').then(stats => {
+    const lock1Promise = fm1.lock('lock1').then((stats) => {
       lock1Acquired = true;
       expect(localStorage.getItem(yPrefix + 'lock1')).to.not.be.null;
       return stats;
     });
 
-    const lock2Promise = fm2.lock('lock2').then(stats => {
+    const lock2Promise = fm2.lock('lock2').then((stats) => {
       lock2Acquired = true;
       expect(localStorage.getItem(yPrefix + 'lock2')).to.not.be.null;
       return stats;
     });
 
-    return Promise.all([lock1Promise, lock2Promise]).then(stats => {
+    return Promise.all([lock1Promise, lock2Promise]).then((stats) => {
       expect(lock1Acquired).to.be.true;
       expect(lock2Acquired).to.be.true;
       expect(stats[0].restartCount).to.be.equal(0);
@@ -142,7 +142,7 @@ describe('FastMutex', () => {
   // this is essentially just a better way to test that two locks cannot get
   // an exclusive lock until the other releases.  It's a bit more accurate
   // than the test above ("release should remove the y lock in localstorage")
-  it('two clients should never get locks at the same time', function() {
+  it('two clients should never get locks at the same time', function () {
     const fm1 = new FastMutex({ localStorage: localStorage });
     const fm2 = new FastMutex({ localStorage: localStorage });
     let fm1LockReleased = false;
@@ -162,7 +162,7 @@ describe('FastMutex', () => {
 
         return lock2Promise;
       })
-      .then(lock2 => {
+      .then((lock2) => {
         // this will only execute once the other lock was released
         expect(fm1LockReleased).to.be.true;
         expect(lock2.restartCount).to.be.above(1);
@@ -170,7 +170,7 @@ describe('FastMutex', () => {
       });
   });
 
-  it('should throw if lock is never acquired after set time period', function() {
+  it('should throw if lock is never acquired after set time period', function () {
     const fm1 = new FastMutex({ localStorage: localStorage, timeout: 50 });
     const fm2 = new FastMutex({ localStorage: localStorage, timeout: 50 });
 
@@ -194,7 +194,7 @@ describe('FastMutex', () => {
     return expect(fm1.lock('timeoutTest')).to.eventually.be.fulfilled;
   });
 
-  it('should reset the client stats after lock is released', done => {
+  it('should reset the client stats after lock is released', (done) => {
     // without resetting the stats, the acquireStart will always be set, and
     // after `timeout` ms, will be unable to acquire a lock anymore
     const fm1 = new FastMutex({ localStorage: localStorage, timeout: 25 });
@@ -209,7 +209,7 @@ describe('FastMutex', () => {
     }, 50);
   });
 
-  it('should reset the client stats if the lock has expired', done => {
+  it('should reset the client stats if the lock has expired', (done) => {
     // in the event a lock cannot be acquired within `timeout`, acquireStart
     // will never be reset, and a subsequent call (after the `timeout`) would
     // immediately fail
